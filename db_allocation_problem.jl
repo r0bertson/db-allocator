@@ -1,4 +1,5 @@
 using JuMP, GLPK
+const MOI = JuMP.MathOptInterface
 
 #=
 Author: Robertson Lima (robertsonlima@ppgi.ci.ufpb.br)
@@ -64,17 +65,19 @@ function db_allocation_problem(; verbose = true, space_for_growth = nothing)
     # Objective - Minimize cost of VM allocation
     @objective(model, Min, sum(vm_usage[j] * vm_cost[j] for j in 1:num_vm))
 
-    JuMP.optimize!(model)
+    JuMP.optimize!(model)  
+    status = JuMP.termination_status(model)
 
     println("Objective value is: ", JuMP.objective_value(model))
-    println("Solution status: ",JuMP.termination_status(model))
     
-    if verbose
+    println("Solution status: ", status)
+    
+    if verbose && (status == MOI.OPTIMAL || status == MOI.ALMOST_OPTIMAL)
         println("You can save ", sum(vm_cost[j] for j in 1:num_vm) - JuMP.objective_value(model), " if you use the following solution: ")
         println("VMs used: ")
         for j in 1:num_vm 
             if JuMP.value(vm_usage[j]) == 1
-                print(string("VM[$j] ", vm_names[j] ," - LOAD = ", JuMP.value(vm_load[j]) / vm_capacity[j], "%\n"))
+                print(string("VM[$j] ", vm_names[j] ," - LOAD = ", JuMP.value(vm_load[j]) / vm_capacity[j] * 100, "%\n"))
             end
         end
 
