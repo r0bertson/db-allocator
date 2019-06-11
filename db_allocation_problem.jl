@@ -1,33 +1,36 @@
 using JuMP, GLPK
 
 #=
-Problem short definition:
-    Allocate a set of N databases on a set of M cloud virtual machines minimizing the cost paid.
-    The VMs are already allocated, so it is a matter of reallocating the databases and shutting down the idle ones to save money.
+Author: Robertson Lima (robertsonlima@ppgi.ci.ufpb.br)
 
-Problem model:
+Problem's short definition:
+    Allocate a set of N databases on a set of M cloud virtual machines, minimizing the overall cost.
+    The VMs are already allocated on the cloud services provider, so it is a matter of reallocating 
+    the databases and shutting down the idle ones to save money.
+
+Mathematical model:
     B = BINS (VM)
     I = ITEMS (Database)
 
-    MIN 
-        SUM(W_j * B_j)			                                  (Minimize VM utilization times cost)
-    ST
-        SUM[i = 1 to len(I)](X_i_j * W_i) <= C_j * B_j ∀ j ∈ B    (VM capacity is respected)
-        SUM[i = 1 to len(I)](X_i_j) = 1 ∀ j ∈ B	                  (Every database is in one VM)
-        X_i_j, B_j ∈ {0,1} ∀ i ∈ I, j ∈ B		                  (Binary)
+    MINIMIZE 
+        SUM[j = 1 to len(B)](W_j * B_j)                              # Minimize bin utilization times cost
+    SUBJECT TP
+        SUM[i = 1 to len(I)](X_i_j * W_i) <= C_j * B_j ∀ j ∈ B      # Bin capacity is respected
+        SUM[i = 1 to len(I)](X_i_j) = 1 ∀ j ∈ B                     # Every item must be in only one bin 
+        X_i_j, B_j ∈ {0,1} ∀ i ∈ I, j ∈ B                           # Binary
 
 =#
 
 
 #= 
 space_for_growth will increase each database size based on its value in percentage. 
-This will keep "reserved" space for growth to each database entry allocated to a VM.
+This will keep a "reserved" space for growth to each database entry allocated to a VM.
 Although this is a workaround, it is useful to avoid the complexity of handling it inside the problem definition.
-If only part of the set of databases need this reserved space, it can be precalculated and used as the original db_size.
+If only part of the set of databases needs this reserved space, it can be precalculated and used as the original db_size.
 =#
 
 function db_allocation_problem(; verbose = true, space_for_growth = nothing)
-    #TODO: A WAY TO IMPORT A FILE WITH INSTANCE SPECS OF A PROBLEM
+    #TODO: A WAY TO IMPORT A FILE THAT CONTAINS INSTANCE SPECS OF A PROBLEM
     vm_names = ["SMALL", "MEDIUM", "LARGE"]
     vm_capacity = [1, 4, 10]
     vm_cost = [100, 300, 350]
@@ -72,7 +75,6 @@ function db_allocation_problem(; verbose = true, space_for_growth = nothing)
         for j in 1:num_vm 
             if JuMP.value(vm_usage[j]) == 1
                 print(string("VM[$j] ", vm_names[j] ," - LOAD = ", JuMP.value(vm_load[j]) / vm_capacity[j], "%\n"))
-                #print("% \n")
             end
         end
 
