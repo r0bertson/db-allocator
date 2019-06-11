@@ -15,8 +15,8 @@ Mathematical model:
 
     MINIMIZE 
         SUM[j = 1 to len(B)](W_j * B_j)                              # Minimize bin utilization times cost
-    SUBJECT TP
-        SUM[i = 1 to len(I)](X_i_j * W_i) <= C_j * B_j ∀ j ∈ B      # Bin capacity is respected
+    SUBJECT TO
+        SUM[i = 1 to len(I)](X_i_j * w_i) <= C_j * B_j ∀ j ∈ B      # Bin capacity is respected
         SUM[i = 1 to len(I)](X_i_j) = 1 ∀ j ∈ B                     # Every item must be in only one bin 
         X_i_j, B_j ∈ {0,1} ∀ i ∈ I, j ∈ B                           # Binary
 
