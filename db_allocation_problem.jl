@@ -12,6 +12,11 @@ Problem's short definition:
 Mathematical model:
     B = BINS (VM)
     I = ITEMS (Database)
+    W_j = cost of bin j
+    w_i = cost of item i
+    C_j = capacity of bin j
+    X_i_j = 1 if item i is in bin j, 0 otherwise
+    B_j = 1 if B_j is part of the solution, 0 otherwise
 
     MINIMIZE 
         SUM[j = 1 to len(B)](W_j * B_j)                              # Minimize bin utilization times cost
