@@ -16,14 +16,14 @@ Mathematical model:
     w_i = cost of item i
     C_j = capacity of bin j
     X_i_j = 1 if item i is in bin j, 0 otherwise
-    B_j = 1 if B_j is part of the solution, 0 otherwise
+    K_j = 1 if K_j is part of the solution, 0 otherwise
 
     MINIMIZE 
-        SUM[j = 1 to len(B)](W_j * B_j)                              # Minimize bin utilization times cost
+        SUM[j = 1 to len(B)](K_j * W_j)                              # Minimize bin utilization times cost
     SUBJECT TO
-        SUM[i = 1 to len(I)](X_i_j * w_i) <= C_j * B_j ∀ j ∈ B      # Bin capacity is respected
+        SUM[i = 1 to len(I)](X_i_j * w_i) <= K_j * C_j ∀ j ∈ B      # Bin capacity is respected
         SUM[i = 1 to len(I)](X_i_j) = 1 ∀ j ∈ B                     # Every item must be in only one bin 
-        X_i_j, B_j ∈ {0,1} ∀ i ∈ I, j ∈ B                           # Binary
+        X_i_j, K_j ∈ {0,1} ∀ i ∈ I, j ∈ B                           # Binary
 
 =#
 
