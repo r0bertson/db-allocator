@@ -19,9 +19,9 @@ Mathematical model:
     K_j = 1 if K_j is part of the solution, 0 otherwise
 
     MINIMIZE 
-        SUM[j = 1 to len(B)](K_j * W_j)                              # Minimize bin utilization times cost
+        SUM[j = 1 to len(B)]( W_j * K_j )                              # Minimize bin utilization times cost
     SUBJECT TO
-        SUM[i = 1 to len(I)](X_i_j * w_i) <= K_j * C_j ∀ j ∈ B      # Bin capacity is respected
+        SUM[i = 1 to len(I)](w_i * X_i_j) <= C_j * K_j ∀ j ∈ B      # Bin capacity is respected
         SUM[i = 1 to len(I)](X_i_j) = 1 ∀ j ∈ B                     # Every item must be in only one bin 
         X_i_j, K_j ∈ {0,1} ∀ i ∈ I, j ∈ B                           # Binary
 
@@ -37,12 +37,14 @@ If only part of the set of databases needs this reserved space, it can be precal
 
 function db_allocation_problem(; verbose = true, space_for_growth = nothing)
     #TODO: A WAY TO IMPORT A FILE THAT CONTAINS INSTANCE SPECS OF A PROBLEM
-    vm_names = ["SMALL", "MEDIUM", "LARGE"]
-    vm_capacity = [1, 4, 10]
-    vm_cost = [100, 300, 350]
     
-    db_names = ["A", "B", "C", "D", "E", "F", "G"]
-    db_sizes = [0.4, 0.7, 4.3, 4.6, 2.7, 0.1, 0.5]
+    #TEST 1 - MORE SERVERS THEN BASES
+    vm_names = ["EXTRA LARGE","LARGE", "LARGE", "SMALL", "SMALL", "SMALL", "SMALL", "MEDIUM", "LARGE", "LARGE"]
+    vm_capacity = [12, 6, 6, 1.5, 1.5, 1.5, 1.5, 3, 6, 6]
+    vm_cost = [1128, 982, 982, 385, 385, 385, 385, 736, 982, 982]
+    
+    db_names = ["A", "B",  "C", "D",  "E",  "F", "G",  "H", "I", "J",  "L", "B", "C"]
+    db_sizes = [8.6, 4.4, 4.15, 0.9, 0.11, 0.01, 1.4, 1.12, 0.3, 0.2, 0.02, 4.4, 4.15]
     #batch_pr = [0 ,   1,   0,   1,   0,   0,   0]
 
     if space_for_growth != nothing
@@ -78,7 +80,10 @@ function db_allocation_problem(; verbose = true, space_for_growth = nothing)
     println("Solution status: ", status)
     
     if verbose && (status == MOI.OPTIMAL || status == MOI.ALMOST_OPTIMAL)
-        println("You can save ", sum(vm_cost[j] for j in 1:num_vm) - JuMP.objective_value(model), " if you use the following solution: ")
+        totalCost = sum(vm_cost[j] for j in 1:num_vm)
+        saved =  totalCost - JuMP.objective_value(model)
+        println("The total cost of your current cloud infrastructure is: ", totalCost)
+        println("You can save ", saved , ", which is equal to ", (100 * saved / totalCost),"% if you allocate your databases using the following solution: ")
         println("VMs used: ")
         for j in 1:num_vm 
             if JuMP.value(vm_usage[j]) == 1
@@ -96,11 +101,11 @@ function db_allocation_problem(; verbose = true, space_for_growth = nothing)
                         print(db_names[i], " ")
                     end
                 end
-            end
-            println()
+                println()
+            end  
         end
     end
 end
 
 db_allocation_problem(verbose = true)
-#db_allocation_problem(verbose = true, space_for_growth = 20)
+#db_allocation_problem(verbose = true, space_for_growth = 10)
